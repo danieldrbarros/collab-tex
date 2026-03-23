@@ -112,5 +112,5 @@ Every contribution matters — whether it’s a small tweak or a major revision.
 
 ---
 
-📍 *Maintained by [dbarros1979](https://github.com/dbarros1979)*
+📍 *Maintained by [danieldrbarros](https://github.com/danieldrbarros)*
 💡 Inspired by the idea of making academic review more **accessible, transparent, and collaborative**.
