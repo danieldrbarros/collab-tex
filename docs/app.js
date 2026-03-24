@@ -1,5 +1,22 @@
-// 1. EXPOSE FUNCTIONS GLOBALLY IMMEDIATELY
-// This prevents the "ReferenceError" if the button is clicked early
+require.config({
+    paths: { vs: 'https://unpkg.com/monaco-editor@0.44.0/min/vs' }
+});
+
+let projectFiles = [];
+let currentFile = "main.tex";
+let currentRepo = null;
+let editor = null;
+
+// --- GLOBAL FUNCTIONS (Defined outside require to be available immediately) ---
+
+window.getToken = function () {
+    const token = document.getElementById("github-token").value;
+    if (!token) return {};
+    return {
+        "Authorization": `Bearer ${token}`
+    };
+};
+
 window.connectRepo = function () {
     const repo = document.getElementById("repo-input").value;
     if (!repo) {
@@ -15,7 +32,13 @@ window.compile = function () {
     const frame = document.getElementById("pdf-preview");
     // Cache busting to force iframe reload
     frame.src = "../main.pdf?t=" + Date.now();
-    setTimeout(() => { status.innerText = "Ready"; }, 800);
+    setTimeout(() => {
+        status.innerText = "Ready";
+    }, 800);
+};
+
+window.downloadPDF = function () {
+    window.open("../main.pdf");
 };
 
 window.saveTex = function () {
@@ -28,26 +51,7 @@ window.saveTex = function () {
     link.click();
 };
 
-window.downloadPDF = function () {
-    window.open("../main.pdf");
-};
-
-window.getToken = function () {
-    const token = document.getElementById("github-token").value;
-    if (!token) return {};
-    return { "Authorization": `Bearer ${token}` };
-};
-
-// 2. STATE VARIABLES
-let projectFiles = [];
-let currentFile = "main.tex";
-let currentRepo = null;
-let editor = null;
-
-// 3. MONACO LOADER
-require.config({
-    paths: { vs: 'https://unpkg.com/monaco-editor@0.44.0/min/vs' }
-});
+// --- CORE LOGIC ---
 
 require(['vs/editor/editor.main'], function () {
     console.log("Monaco loaded");
@@ -82,7 +86,6 @@ require(['vs/editor/editor.main'], function () {
     }
 });
 
-// 4. HELPER FUNCTIONS
 function detectLanguage(file) {
     if (file.endsWith(".tex")) return "latex";
     if (file.endsWith(".bib")) return "plaintext";
@@ -97,18 +100,22 @@ async function loadProject() {
         const data = await res.json();
         projectFiles = data.files;
         buildFileTree();
-    } catch (e) { console.log("No local project.json found"); }
+    } catch (e) {
+        console.error("Local project.json not found", e);
+    }
 }
 
 async function loadGithubRepo(repo) {
     currentRepo = repo;
     const headers = window.getToken();
+
     try {
         const repoInfo = await fetch(`https://api.github.com/repos/${repo}`, { headers });
         const repoData = await repoInfo.json();
         const branch = repoData.default_branch;
 
-        const res = await fetch(`https://api.github.com/repos/${repo}/git/trees/${branch}?recursive=1`, { headers });
+        const treeURL = `https://api.github.com/repos/${repo}/git/trees/${branch}?recursive=1`;
+        const res = await fetch(treeURL, { headers });
         const data = await res.json();
 
         projectFiles = data.tree
@@ -116,37 +123,52 @@ async function loadGithubRepo(repo) {
             .map(item => item.path);
 
         buildFileTree();
+
         const mainFile = projectFiles.find(f => f.endsWith("main.tex"));
-        if (mainFile) openGithubFile(repo, mainFile);
+        if (mainFile) {
+            openGithubFile(repo, mainFile);
+        }
     } catch (error) {
+        console.error("Error loading repo:", error);
         document.getElementById("status").innerText = "Error Loading Repo";
     }
 }
 
 async function openGithubFile(repo, path) {
-    console.log("Opening:", path);
     try {
         const headers = window.getToken();
-        const url = `https://api.github.com/repos/${repo}/contents/${path}`;
-        const res = await fetch(url, {
-            headers: { ...headers, "Accept": "application/vnd.github.v3.raw" }
-        });
+        const repoInfo = await fetch(`https://api.github.com/repos/${repo}`, { headers });
+        const repoData = await repoInfo.json();
+        const branch = repoData.default_branch;
+
+        const url = `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`;
+        // Request raw content to avoid CORS issues with raw.githubusercontent.com
+        const rawHeaders = { ...headers, "Accept": "application/vnd.github.v3.raw" };
+
+        const res = await fetch(url, { headers: rawHeaders });
+        if (!res.ok) throw new Error("Failed to fetch file content");
 
         const text = await res.text();
         currentFile = path;
+
         const lang = detectLanguage(path);
         monaco.editor.setModelLanguage(editor.getModel(), lang);
         editor.setValue(text);
     } catch (error) {
+        console.error("Error opening file:", error);
         document.getElementById("status").innerText = "Error loading file";
     }
 }
 
-function buildFileTree() {
-    const container = document.getElementById("file-tree");
-    container.innerHTML = "";
-    const tree = buildTreeStructure(projectFiles);
-    container.appendChild(renderTree(tree));
+function openFile(path) {
+    fetch("../" + path)
+        .then(res => res.text())
+        .then(text => {
+            currentFile = path;
+            const lang = detectLanguage(path);
+            monaco.editor.setModelLanguage(editor.getModel(), lang);
+            editor.setValue(text);
+        });
 }
 
 function buildTreeStructure(files) {
@@ -156,7 +178,10 @@ function buildTreeStructure(files) {
         let current = root;
         parts.forEach((part, index) => {
             if (!current[part]) {
-                current[part] = { __isFile: index === parts.length - 1, children: {} };
+                current[part] = {
+                    __isFile: index === parts.length - 1,
+                    children: {}
+                };
             }
             current = current[part].children;
         });
@@ -170,19 +195,36 @@ function renderTree(node, parentPath = "") {
         const item = node[name];
         const li = document.createElement("li");
         const fullPath = parentPath ? parentPath + "/" + name : name;
+
         if (item.__isFile) {
             li.textContent = "📄 " + name;
-            li.onclick = () => currentRepo ? openGithubFile(currentRepo, fullPath) : openFile(fullPath);
+            li.onclick = () => {
+                if (currentRepo) {
+                    openGithubFile(currentRepo, fullPath);
+                } else {
+                    openFile(fullPath);
+                }
+            };
         } else {
             li.textContent = "📁 " + name;
             li.style.fontWeight = "bold";
-            li.appendChild(renderTree(item.children, fullPath));
+            const child = renderTree(item.children, fullPath);
+            li.appendChild(child);
         }
         ul.appendChild(li);
     }
     return ul;
 }
 
+function buildFileTree() {
+    const container = document.getElementById("file-tree");
+    container.innerHTML = "";
+    const tree = buildTreeStructure(projectFiles);
+    const ui = renderTree(tree);
+    container.appendChild(ui);
+}
+
 function getRepoFromURL() {
-    return new URLSearchParams(window.location.search).get("repo");
+    const params = new URLSearchParams(window.location.search);
+    return params.get("repo");
 }

@@ -5,7 +5,7 @@ A serverless, open-source alternative to web-based LaTeX editors.
 Collab-TeX runs entirely in your browser using GitHub Pages. It connects directly to your public or private GitHub repositories, allowing you to edit LaTeX documents using the powerful Monaco Editor and automatically push changes back via pull requests or commits.
 
 ## 🚀 Live Demo
-Access the editor directly here: **[Your GitHub Pages URL]**
+Access the editor directly [here](https://danieldrbarros.github.io/collab-tex/)
 
 ## ✨ Features
 * **Browser-Native:** No backend required. Everything runs via client-side JavaScript.
