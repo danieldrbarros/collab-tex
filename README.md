@@ -24,9 +24,9 @@ To test or contribute to the project locally, you need a basic HTTP server to av
    ```
 2. Serve the directory using Python:
    ```bash
-   python -m http.server 8000
+   python3 -m http.server 8000
    ```
-3. Open `http://localhost:8000` in your browser.
+3. Open `http://localhost:8000/docs/` in your browser.
 
 ## 🤝 Contributing
 Contributions are welcome! We are currently looking for help implementing the GitHub Issues/Pull Request generation from the frontend.

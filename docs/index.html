@@ -2,79 +2,42 @@
 <html>
 
 <head>
-
     <meta charset="UTF-8">
-
     <title>collab-tex</title>
 
+    <script src="https://cdn.jsdelivr.net/npm/swiftlatex@1.0.9/dist/swiftlatex.min.js" defer></script>
+
     <link rel="stylesheet" href="app.css">
-
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234a90e2' stroke-width='2'><rect x='4' y='2' width='16' height='20' rx='2'/><path d='M12 18h4m-4-4h4m-8-4h8M8 14h2m-2 4h2'/><circle cx='18' cy='6' r='3' fill='%234a90e2'/></svg>">
-
 </head>
 
 <body>
-
     <div id="repo-bar">
-
         <input id="repo-input" placeholder="owner/repository" />
-
         <input id="github-token" type="password" placeholder="GitHub token (optional)" />
-
-        <button onclick="connectRepo()">
-            Connect Repo
-        </button>
-
-        <button onclick="compile()">
-            Compile
-        </button>
-
-        <button onclick="saveTex()">
-            Save
-        </button>
-
-        <button onclick="downloadPDF()">
-            Download PDF
-        </button>
-
-        <span id="status">
-            Ready
-        </span>
-
+        <button onclick="connectRepo()">Connect Repo</button>
+        <button onclick="compile()">Compile</button>
+        <button onclick="saveTex()">Save</button>
+        <button onclick="downloadPDF()">Download PDF</button>
+        <button onclick="createPullRequest()">Create PR</button>
+        <span id="status">Ready</span>
     </div>
-
 
     <div class="container">
-
         <div class="sidebar">
-
             <h3>Files</h3>
-
             <div id="file-tree"></div>
-
         </div>
-
-
         <div class="editor">
-
             <div id="editor"></div>
-
         </div>
-
-
         <div class="preview">
-
             <iframe id="pdf-preview"></iframe>
-
         </div>
-
     </div>
 
-
     <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
-
     <script src="app.js"></script>
-
 </body>
 
 </html>
