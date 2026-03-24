@@ -1,116 +1,32 @@
-# ✨ Collab-Tex  
-_Redesigning Academic LaTeX Collaboration_
+# Collab-TeX
 
----
+A serverless, open-source alternative to web-based LaTeX editors. 
 
-## 🚀 What is Collab-Tex?
+Collab-TeX runs entirely in your browser using GitHub Pages. It connects directly to your public or private GitHub repositories, allowing you to edit LaTeX documents using the powerful Monaco Editor and automatically push changes back via pull requests or commits.
 
-**Collab-Tex** is a collaborative platform for reviewing **LaTeX documents**.  
-Reviewers and authors can **edit**, **suggest improvements**, and **track PDFs in real time** — all without installing any software.
+## 🚀 Live Demo
+Access the editor directly here: **[Your GitHub Pages URL]**
 
-📌 Think of it as a simple, open alternative to Overleaf.
+## ✨ Features
+* **Browser-Native:** No backend required. Everything runs via client-side JavaScript.
+* **GitHub Integration:** Fetch file trees and read files directly from `owner/repo` (e.g., `ufabc-inclusive-education/ohekomboe-research`).
+* **Monaco Editor:** Syntax highlighting and intelligent tokenization for `.tex`, `.bib`, and `.md` files.
+* **Private Repositories:** Support for GitHub Personal Access Tokens (PAT) to work on private doctoral research or proprietary projects securely.
 
----
+## 🛠️ Running Locally
 
-## 🔄 How it works
+To test or contribute to the project locally, you need a basic HTTP server to avoid CORS issues with ES modules and local file fetching.
 
-1. **Edit directly in GitHub**  
-   - Click any `.tex` file → **Edit** → propose your changes.  
-   - Create a **Pull Request** to submit your suggestions.
-
-2. **Automatic PDF preview via GitHub Pages**  
-   - Every change triggers a **GitHub Actions workflow** that recompiles the PDF.  
-   - The updated PDF is served automatically from the `docs/` folder via **GitHub Pages**.
-
-3. **Suggest improvements**  
-   - Comment on Pull Requests or propose changes directly in `.tex` files.  
-   - The PDF will update automatically after each workflow run.
-
----
-
-## 📄 Preview PDF via Pages (Non-Technical Reviewers)
-
-To make reviewing as simple as possible, we provide **direct links to the latest compiled PDF** for each branch.  
-Click the link to open the PDF — no setup required.
-
-| Branch Name       | PDF Preview Link                                      |
-|------------------|------------------------------------------------------|
-| `main`           | [View PDF](https://dbarros1979.github.io/collab-tex//main.pdf) |
-| `draft`          | [View PDF](https://dbarros1979.github.io/collab-tex/draft.pdf) |
-| `feature-x`      | [View PDF](https://dbarros1979.github.io/collab-tex//feature-x.pdf) |
-
-> ⚠️ Tip: The PDF on Pages always reflects the **latest workflow run** for that branch.
-
----
-
-## 🛠️ Repository Structure
-
-    ```
-    collab-tex/
-    │── docs/               # Compiled PDFs (served by GitHub Pages)
-    │── figures/            # Images used in the documents
-    │── references.bib      # Bibliography file
-    │── example.tex         # Example LaTeX document
-    │── .github/workflows/  # Compilation workflow
-    ````
-
----
-
-## 👩‍💻 For Reviewers
-
-### Non-technical Reviewers
-- No installation needed.  
-- Click the branch PDF links above to **review the latest document**.  
-- Suggest changes via **Pull Requests** or **comments** directly on GitHub.
-
-### Technical Reviewers (optional)
-1. Clone the repository:
-
+1. Clone this repository:
    ```bash
-   git clone https://github.com/YOUR-USERNAME/collab-tex.git
-   cd collab-tex
-    ````
-
-2. Install TeX Live (before any editor/plugin):
-
-   ```bash
-   sudo apt-get update
-   sudo apt-get install texlive-full
+   git clone [https://github.com/yourusername/collab-tex.git](https://github.com/yourusername/collab-tex.git)
+   cd collab-tex/docs
    ```
-3. Compile the PDF locally (mirrors GitHub Actions workflow):
-
+2. Serve the directory using Python:
    ```bash
-   pdflatex -interaction=nonstopmode -output-directory=docs main.tex
-   bibtex docs/main
-   pdflatex -interaction=nonstopmode -output-directory=docs main.tex
-   pdflatex -interaction=nonstopmode -output-directory=docs main.tex
+   python -m http.server 8000
    ```
-
----
-
-## 📦 Local Setup (Optional)
-
-* **TeX Live** is recommended for local compilation.
-* **VSCode + LaTeX Workshop** for building and previewing PDFs locally.
-
-> ⚠️ Tip: Install TeX Live **before** any editor/plugin to avoid compilation errors.
-
----
+3. Open `http://localhost:8000` in your browser.
 
 ## 🤝 Contributing
-
-* Open an **Issue** to discuss ideas.
-* Submit a **Pull Request** to suggest changes.
-* Every contribution counts — from fixing a typo to reorganizing sections.
-
----
-
-## 🌟 Why Collab-Tex?
-
-Science thrives in community.
-Every contribution matters — whether it’s a small tweak or a major revision.
-
----
-
-📍 *Maintained by [danieldrbarros](https://github.com/danieldrbarros)*
-💡 Inspired by the idea of making academic review more **accessible, transparent, and collaborative**.
+Contributions are welcome! We are currently looking for help implementing the GitHub Issues/Pull Request generation from the frontend.

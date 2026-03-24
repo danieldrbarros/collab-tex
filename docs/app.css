@@ -1,624 +1,85 @@
-/* app.css - full file
-   - Layout classes for split / full editor / full preview (Option B)
-   - Header/menu/tab fixes
-   - CodeMirror & PDF container styles
-   - Responsive adjustments
-*/
-
-/* ---------------------------
-   :root / variables
-   --------------------------- */
-:root {
-    --primary-color: #1a73e8;
-    --secondary-color: #34a853;
-    --danger-color: #ea4335;
-    --warning-color: #fbbc04;
-    --dark-bg: #202124;
-    --sidebar-bg: #2d2e31;
-    --editor-bg: #1e1e1e;
-    --text-light: #ffffff;
-    --text-dark: #333333;
-    --text-muted: #9aa0a6;
-    --border-color: #3c4043;
-    --hover-color: #35363a;
-    --header-height: 60px;
-    --sidebar-width: 280px;
-    --footer-height: 34px;
-    --resizer-width: 8px;
-}
-
-/* ---------------------------
-   Base reset & layout
-   --------------------------- */
-* {
+body {
     margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+    font-family: Arial, sans-serif;
 }
 
-html,
-body {
-    height: 100%;
+.toolbar {
+    background: #2d2d2d;
+    padding: 10px;
 }
 
-body {
-    font-family: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial;
-    background: var(--dark-bg);
-    color: var(--text-light);
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-/* ---------------------------
-   Header
-   --------------------------- */
-.header {
-    height: var(--header-height);
-    background-color: var(--dark-bg);
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 18px;
-    z-index: 100;
-    flex-shrink: 0;
-    gap: 12px;
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-.logo i {
-    color: var(--primary-color);
-    font-size: 1.2rem;
-}
-
-.header-controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    white-space: nowrap;
-}
-
-/* ---------------------------
-   Buttons
-   --------------------------- */
-.btn {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 12px;
-    font-size: 0.95rem;
+.toolbar button {
+    margin-right: 10px;
+    padding: 6px 12px;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: transform .06s ease, background .12s ease, box-shadow .12s ease;
 }
 
-.btn:active {
-    transform: translateY(0);
-}
-
-.btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
-}
-
-.btn-secondary {
-    background: var(--sidebar-bg);
-    color: var(--text-light);
-    border: 1px solid rgba(255, 255, 255, 0.03);
-}
-
-.btn-success {
-    background: var(--secondary-color);
-    color: #fff;
-}
-
-.btn-danger {
-    background: var(--danger-color);
-    color: #fff;
-}
-
-/* small btn variants */
-.btn.small {
-    padding: 6px 8px;
-    font-size: 0.85rem;
-}
-
-/* ---------------------------
-   Container, sidebar, editor area
-   --------------------------- */
 .container {
     display: flex;
-    flex: 1 1 auto;
-    overflow: hidden;
-    height: calc(100vh - var(--header-height) - var(--footer-height));
+    height: calc(100vh - 50px);
 }
 
 .sidebar {
-    width: var(--sidebar-width);
-    background-color: var(--sidebar-bg);
-    border-right: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    flex-shrink: 0;
-    min-width: 200px;
-}
-
-/* sidebar sections */
-.sidebar-section {
-    padding: 10px 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-    color: var(--text-muted);
-}
-
-/* file list */
-.file-tree {
+    width: 200px;
+    background: #f3f3f3;
+    padding: 10px;
+    border-right: 1px solid #ccc;
     overflow: auto;
 }
 
-.file-list {
-    list-style: none;
-}
-
-.file-item {
-    padding: 8px 8px;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    cursor: pointer;
-    color: var(--text-muted);
-    border-radius: 6px;
-}
-
-.file-item:hover {
-    background: var(--hover-color);
-    color: var(--text-light);
-}
-
-.file-item.active {
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
-    color: var(--text-light);
-}
-
-/* collaborators */
-.user-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 0;
-    color: var(--text-muted);
-}
-
-.user-avatar {
-    width: 34px;
-    height: 34px;
-    border-radius: 6px;
-    background: #444;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 600;
-}
-
-/* ---------------------------
-   Editor area & tabs
-   --------------------------- */
-.editor-area {
+.editor {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-    min-width: 0;
 }
 
-.editor-tabs {
-    display: flex;
-    gap: 6px;
-    padding: 8px 12px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    background: var(--sidebar-bg);
-    border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0;
-}
-
-.editor-tab {
-    padding: 6px 10px;
-    border-radius: 8px;
-    display: inline-flex;
-    gap: 8px;
-    align-items: center;
-    cursor: pointer;
-    color: var(--text-muted);
-    white-space: nowrap;
-    border: 1px solid transparent;
-    transition: background .12s ease, color .12s ease, transform .06s;
-}
-
-.editor-tab:hover {
-    transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.02);
-    color: var(--text-light);
-}
-
-.editor-tab.active {
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
-    color: var(--text-light);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.editor-tab .editor-tab-close {
-    margin-left: 8px;
-    opacity: 0.8;
-}
-
-.editor-tab .editor-tab-close i {
-    font-size: 12px;
-}
-
-/* ---------------------------
-   Editor container & panels
-   --------------------------- */
-.editor-container {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-    position: relative;
-    transition: all .16s ease;
-    min-height: 0;
-}
-
-.code-panel {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    min-width: 180px;
-    max-width: calc(100% - 200px);
-    transition: width .16s ease, flex .16s ease;
-    background: var(--editor-bg);
-}
-
-.preview-panel {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    min-width: 180px;
-    max-width: calc(100% - 200px);
-    transition: width .16s ease, flex .16s ease;
-    background: var(--sidebar-bg);
-}
-
-/* panel headers */
-.panel-header {
-    padding: 8px 12px;
-    background: var(--sidebar-bg);
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
-}
-
-.panel-title {
-    font-size: .95rem;
-    font-weight: 600;
-    color: var(--text-light);
-}
-
-.panel-controls {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-/* rich controls like zoom display */
-.zoom-controls {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-}
-
-/* CodeMirror frame */
-.CodeMirror {
-    flex: 1;
+#editor {
+    width: 100%;
     height: 100%;
-    font-family: "SFMono-Regular", Menlo, Monaco, "Courier New", monospace;
-    font-size: 14px;
-    line-height: 1.45;
 }
 
-/* ---------------------------
-   Resizer
-   --------------------------- */
-.resizer {
-    width: var(--resizer-width);
-    background: var(--border-color);
-    cursor: col-resize;
-    flex-shrink: 0;
-    transition: background .12s, opacity .16s;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.preview {
+    width: 40%;
+    border-left: 1px solid #ccc;
 }
 
-.resizer::before {
-    content: '⋮';
-    color: var(--text-muted);
-    font-size: 11px;
-    opacity: 0.6;
-}
-
-/* ---------------------------
-   PDF container & placeholders
-   --------------------------- */
-.pdf-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-}
-
-.pdf-frame {
+.preview iframe {
     width: 100%;
     height: 100%;
     border: none;
-    display: block;
-    background: #fff;
 }
 
-.pdf-placeholder,
-.pdf-error {
+#status {
+    color: white;
+    margin-left: 20px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li {
+    padding: 6px;
+    cursor: pointer;
+}
+
+.sidebar li:hover {
+    background: #ddd;
+}
+
+#repo-bar {
+    padding: 10px;
+    background: #222;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    color: var(--text-muted);
-    padding: 24px;
-    height: 100%;
-    text-align: center;
-}
-
-.pdf-error {
-    color: var(--danger-color);
-}
-
-/* ---------------------------
-   Layout classes: split / full editor / full preview
-   (Option B: overlay behavior via hiding panels)
-   --------------------------- */
-
-/* default split */
-.editor-container.layout-split .code-panel {
-    display: flex;
-    width: auto;
-    flex: 1 1 50%;
-}
-
-.editor-container.layout-split .preview-panel {
-    display: flex;
-    width: auto;
-    flex: 1 1 50%;
-}
-
-.editor-container.layout-split .resizer {
-    display: flex;
-}
-
-/* full editor: preview hidden */
-.editor-container.layout-code-full .code-panel {
-    display: flex !important;
-    width: 100% !important;
-    flex: 1 1 100% !important;
-}
-
-.editor-container.layout-code-full .preview-panel {
-    display: none !important;
-}
-
-.editor-container.layout-code-full .resizer {
-    display: none !important;
-}
-
-/* full preview: code hidden */
-.editor-container.layout-preview-full .preview-panel {
-    display: flex !important;
-    width: 100% !important;
-    flex: 1 1 100% !important;
-}
-
-.editor-container.layout-preview-full .code-panel {
-    display: none !important;
-}
-
-.editor-container.layout-preview-full .resizer {
-    display: none !important;
-}
-
-/* ---------------------------
-   Footer
-   --------------------------- */
-.footer {
-    height: var(--footer-height);
-    background: var(--dark-bg);
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    flex-shrink: 0;
-}
-
-/* status indicators */
-.status-indicators {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-/* ---------------------------
-   Dropdowns & branch menu
-   --------------------------- */
-.branch-dropdown {
-    position: relative;
-}
-
-.branch-dropdown .branch-dropdown-content {
-    position: absolute;
-    top: calc(100% + 6px);
-    right: 0;
-    min-width: 180px;
-    background: var(--sidebar-bg);
-    border: 1px solid var(--border-color);
-    z-index: 9999;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.branch-dropdown-content {
-    display: none;
-    position: absolute;
-    top: calc(100% + 6px);
-    right: 0;
-    min-width: 180px;
-    background: var(--sidebar-bg);
-    border: 1px solid var(--border-color);
-    z-index: 9999;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.branch-dropdown-content.show {
-    display: block;
-}
-
-.branch-item {
-    padding: 8px 10px;
-    display: flex;
-    justify-content: space-between;
     gap: 10px;
     align-items: center;
-    cursor: pointer;
-    color: var(--text-muted);
 }
 
-.branch-item:hover {
-    background: var(--hover-color);
-    color: var(--text-light);
+#repo-input {
+    flex: 1;
+    padding: 6px;
 }
 
-/* ---------------------------
-   Editor controls & small helpers
-   --------------------------- */
-.zoom-display,
-.font-size-display {
-    padding: 0 8px;
-    color: var(--text-muted);
-}
-
-/* notification */
-.notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 12px 16px;
-    border-radius: 8px;
-    background: var(--primary-color);
-    color: white;
-    z-index: 2000;
-    transform: translateX(160%);
-    transition: transform .25s ease, opacity .25s;
-}
-
-.notification.show {
-    transform: translateX(0);
-}
-
-/* small utility */
-.hidden {
-    display: none !important;
-}
-
-/* ---------------------------
-   Responsive behavior
-   --------------------------- */
-@media (max-width: 980px) {
-    .sidebar {
-        width: 220px;
-        min-width: 160px;
-    }
-
-    .editor-tabs {
-        padding: 8px 8px;
-    }
-
-    .header {
-        padding: 0 12px;
-    }
-}
-
-@media (max-width: 720px) {
-    .container {
-        flex-direction: column;
-        height: auto;
-    }
-
-    .sidebar {
-        width: 100%;
-        height: 150px;
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .editor-container {
-        flex-direction: column;
-    }
-
-    .resizer {
-        width: 100%;
-        height: var(--resizer-width);
-        cursor: row-resize;
-    }
-}
-
-/* ---------------------------
-   Animations
-   --------------------------- */
-@keyframes spin {
-    0% {
-        transform: rotate(0);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-/* small touches */
-.panel-controls .btn {
-    padding: 6px 10px;
-    font-size: 0.9rem;
+#github-token {
+    width: 200px;
+    padding: 6px;
 }

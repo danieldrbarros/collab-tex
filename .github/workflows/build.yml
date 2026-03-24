@@ -1,49 +1,41 @@
-name: Build LaTeX PDF and Deploy Pages
+name: Build and Deploy
 
 on:
   push:
-    branches:
-      - '**'
-  pull_request:
+    branches: ["main"] # Only deploy from your primary branch
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
-  build_pdf:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install TeX Live Full
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y texlive-full
-
-      - name: Compile LaTeX with pdflatex
-        run: |
-          mkdir -p docs
-          pdflatex -interaction=nonstopmode -output-directory=docs main.tex
-          bibtex docs/main.aux || true
-          pdflatex -interaction=nonstopmode -output-directory=docs main.tex
-          pdflatex -interaction=nonstopmode -output-directory=docs main.tex
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-        
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Compile LaTeX
+        # Using a pre-built Docker image is MUCH faster than apt-get install
+        uses: xu-cheng/latex-action@v3
         with:
-          path: docs/
+          root_file: main.tex
+          # This handles bibtex and multiple runs automatically
+          args: "-pdf -bibtex -interaction=nonstopmode -outdir=docs"
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: ./docs
 
   deploy:
-    needs: build_pdf
-    permissions:
-      pages: write
-      id-token: write
+    needs: build
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages
         id: deployment

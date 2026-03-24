@@ -1,148 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Collab-Tex - Online LaTeX Editor</title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+    <meta charset="UTF-8">
+
+    <title>collab-tex</title>
+
     <link rel="stylesheet" href="app.css">
 
-    <!-- latex.js fallback (keeps HTML preview available if WASM or network blocked) -->
-    <script src="https://cdn.jsdelivr.net/npm/latex.js/dist/latex.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/latex.js/dist/latex.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234a90e2' stroke-width='2'><rect x='4' y='2' width='16' height='20' rx='2'/><path d='M12 18h4m-4-4h4m-8-4h8M8 14h2m-2 4h2'/><circle cx='18' cy='6' r='3' fill='%234a90e2'/></svg>">
+
 </head>
 
 <body>
-    <div class="header">
-        <div class="logo"><i class="fas fa-code"></i><span>Collab-Tex</span></div>
-        <div class="header-controls">
-            <div class="branch-selector">
-                <div class="branch-dropdown">
-                    <button class="btn btn-secondary" id="branchDropdownBtn">
-                        <span id="currentBranchDisplay">main</span> <i class="fas fa-caret-down"></i>
-                    </button>
-                    <div class="branch-dropdown-content" id="branchDropdown">
-                        <div class="branch-item" data-branch="main"><span>main</span> <i class="fas fa-check"></i></div>
-                        <div class="branch-item" data-branch="develop"><span>develop</span></div>
-                    </div>
-                </div>
-            </div>
 
-            <button class="btn" id="compileBtn" data-tooltip="Compile LaTeX (Ctrl+Enter)"><i class="fas fa-play"></i> <span id="compileText">Compile</span></button>
-            <button class="btn btn-success" id="saveBtn" data-tooltip="Save document (Ctrl+S)"><i class="fas fa-save"></i> Save</button>
-            <button class="btn btn-secondary" id="reloadBtn" data-tooltip="Refresh PDF preview"><i class="fas fa-redo"></i> Refresh</button>
-        </div>
+    <div id="repo-bar">
+
+        <input id="repo-input" placeholder="owner/repository" />
+
+        <input id="github-token" type="password" placeholder="GitHub token (optional)" />
+
+        <button onclick="connectRepo()">
+            Connect Repo
+        </button>
+
+        <button onclick="compile()">
+            Compile
+        </button>
+
+        <button onclick="saveTex()">
+            Save
+        </button>
+
+        <button onclick="downloadPDF()">
+            Download PDF
+        </button>
+
+        <span id="status">
+            Ready
+        </span>
+
     </div>
+
 
     <div class="container">
+
         <div class="sidebar">
-            <div class="sidebar-section" style="flex:1; overflow:hidden; display:flex; flex-direction:column;">
-                <h3 style="padding:12px 15px; color:var(--text-muted)"><i class="fas fa-project-diagram"></i> Project Files</h3>
-                <div class="file-tree" id="fileTreeContainer" style="padding:0 12px;">
-                    <ul class="file-list" id="fileList" style="list-style:none;">
-                        <li class="file-item active" data-file="main.tex"><i class="fas fa-file-code"></i> main.tex</li>
-                        <li class="file-item" data-file="references.bib"><i class="fas fa-file-alt"></i> references.bib</li>
-                        <li class="folder-item"><i class="fas fa-folder"></i> images</li>
-                        <div class="folder-contents">
-                            <li class="file-item" data-file="images/diagram.png"><i class="fas fa-file-image"></i> diagram.png</li>
-                        </div>
-                    </ul>
-                </div>
-            </div>
-            <div class="sidebar-section" style="max-height:150px; overflow:auto; padding:12px;">
-                <h3 style="color:var(--text-muted)"><i class="fas fa-users"></i> Collaborators</h3>
-                <div id="collaboratorsList">
-                    <div class="user-item">
-                        <div class="user-avatar">DB</div><span>dbarros1979 (You)</span>
-                    </div>
-                    <div class="user-item">
-                        <div class="user-avatar" style="background-color:var(--secondary-color)">JD</div><span>jdoe</span>
-                    </div>
-                </div>
-            </div>
+
+            <h3>Files</h3>
+
+            <div id="file-tree"></div>
+
         </div>
 
-        <div class="editor-area">
-            <div class="editor-tabs" id="editorTabs">
-                <div class="editor-tab active" data-file="main.tex"><i class="fas fa-file-code"></i> main.tex <span class="editor-tab-close"><i class="fas fa-times"></i></span></div>
-            </div>
 
-            <div class="editor-container layout-split" id="editorContainer">
-                <div class="code-panel" id="codePanel">
-                    <div class="panel-header">
-                        <span class="panel-title" id="currentFile">main.tex</span>
-                        <div class="panel-controls">
-                            <div class="zoom-controls">
-                                <button class="btn btn-secondary zoom-btn" id="fontSmallerBtn" data-tooltip="Decrease font size"><i class="fas fa-font"></i><i class="fas fa-minus" style="font-size:8px;"></i></button>
-                                <span class="zoom-display" id="fontSizeDisplay">14px</span>
-                                <button class="btn btn-secondary zoom-btn" id="fontLargerBtn" data-tooltip="Increase font size"><i class="fas fa-font"></i><i class="fas fa-plus" style="font-size:8px;"></i></button>
-                            </div>
-                            <button class="btn btn-secondary" id="undoBtn" disabled><i class="fas fa-undo"></i></button>
-                            <button class="btn btn-secondary" id="redoBtn" disabled><i class="fas fa-redo"></i></button>
-                            <button class="btn btn-secondary" id="wordCountBtn"><i class="fas fa-font"></i></button>
-                            <button class="btn btn-secondary" id="codeFullBtn" data-tooltip="Expand editor (Ctrl+E)"><i class="fas fa-expand"></i></button>
-                        </div>
-                    </div>
-                    <div style="flex:1; overflow:hidden; height:100%;"><textarea id="texEditor"></textarea></div>
-                </div>
+        <div class="editor">
 
-                <div class="resizer" id="resizer"></div>
+            <div id="editor"></div>
 
-                <div class="preview-panel" id="previewPanel">
-                    <div class="panel-header">
-                        <span class="panel-title">Preview</span>
-                        <div class="panel-controls">
-                            <div class="zoom-controls">
-                                <button class="btn btn-secondary zoom-btn" id="zoomOutBtn"><i class="fas fa-search-minus"></i></button>
-                                <span class="zoom-display" id="zoomDisplay">100%</span>
-                                <button class="btn btn-secondary zoom-btn" id="zoomResetBtn"><i class="fas fa-search"></i></button>
-                                <button class="btn btn-secondary zoom-btn" id="zoomInBtn"><i class="fas fa-search-plus"></i></button>
-                            </div>
-                            <button class="btn btn-secondary" id="previewFullBtn" data-tooltip="Expand preview (Ctrl+P)"><i class="fas fa-expand"></i></button>
-                            <button class="btn btn-secondary" id="splitViewBtn" style="display:none"><i class="fas fa-columns"></i></button>
-                            <button class="btn btn-secondary" id="fullscreenBtn"><i class="fas fa-expand-arrows-alt"></i></button>
-                            <button class="btn btn-secondary" id="downloadBtn"><i class="fas fa-download"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="pdf-container" id="pdfContainer">
-                        <div class="pdf-placeholder" id="pdfPlaceholder"><i class="fas fa-file-pdf"></i>
-                            <p>Document preview will appear here after compilation</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
-    </div>
 
-    <div class="compilation-log" id="compilationLog" style="display:none;">
-        <div class="log-header"><span>Compilation Log</span><button class="btn btn-secondary" id="toggleLog"><i class="fas fa-chevron-up"></i></button></div>
-        <div class="log-content" id="logContent"></div>
-    </div>
 
-    <div class="footer">
-        <div class="status-indicators">
-            <div class="status-item"><i class="fas fa-circle" id="connectionStatus" style="color:var(--secondary-color)"></i> <span>Connected</span></div>
-            <div class="status-item"><i class="fas fa-save" id="saveStatus"></i> <span id="saveStatusText">No changes</span></div>
-            <div class="status-item"><i class="fas fa-code" id="latexStatus"></i> <span>LaTeX</span></div>
+        <div class="preview">
+
+            <iframe id="pdf-preview"></iframe>
+
         </div>
-        <div class="status-item"><span id="statusMessage">Ready</span><span id="layoutIndicator" style="margin-left:15px;color:var(--primary-color)">Split View</span></div>
+
     </div>
 
-    <div class="notification" id="notification"></div>
-    <div class="context-menu" id="contextMenu"></div>
 
-    <!-- CodeMirror -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/stex/stex.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/scroll/simplescrollbars.min.js"></script>
+    <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
+
     <script src="app.js"></script>
+
 </body>
 
 </html>
